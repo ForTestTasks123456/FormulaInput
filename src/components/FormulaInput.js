@@ -1,47 +1,53 @@
-import React, { useState } from "react";
-import { useStore } from "../store";
-import { useAutocomplete } from "../api";
-import {
-  TextField,
-  List,
-  ListItem,
-  IconButton,
-  Stack,
-  Box,
-  Autocomplete,
-  Chip,
-} from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
+import React from "react";
+import { useStore } from "../store/store";
+import { useAutocomplete } from "../api/api";
+import { TextField, Box, Autocomplete, Chip, Typography } from "@mui/material";
+import { typeTagMath } from "../constants/constants";
+import { findMathematicalSymbols, evaluateExpression } from "../utils/index";
 
 const FormulaInput = () => {
-  const [inputValue, setInputValue] = useState("");
-  const { tags, addTag, removeTag } = useStore();
-  const lastInput = inputValue
-    .split(" ")
-    .slice(-1)[0]
-    .trim()
-    .replace(/[^a-zA-Z0-9а-яА-ЯёЁ]/g, "");
-  const { data: suggestions } = useAutocomplete(lastInput);
+  const { tags, addTag, removeTag, inputValue, setInputValue } = useStore();
+
+  const { data: suggestions } = useAutocomplete();
 
   const handleInputChange = (event, newInputValue, reason) => {
     if (reason === "input") {
-      // Убедитесь, что обновление состояния происходит только при вводе пользователя
       setInputValue(newInputValue);
     }
   };
 
   const handleSelect = (event, newValue) => {
-    if (newValue && !tags.find((tag) => tag.id === newValue.id)) {
-      addTag(newValue);
+    if (newValue) {
+      const newTag = newValue[newValue.length - 1];
+      const mathematicalSymbols = findMathematicalSymbols(
+        newTag?.name,
+        inputValue
+      );
+      setInputValue("");
+      let updatedTags;
+      if (mathematicalSymbols) {
+        updatedTags = [
+          ...newValue.slice(0, newValue.length - 1),
+          {
+            name: mathematicalSymbols,
+            value: mathematicalSymbols,
+            type: typeTagMath,
+            id: newTag?.id,
+          },
+          newValue[newValue.length - 1],
+        ];
+      } else {
+        updatedTags = [...newValue];
+      }
+
+      addTag(updatedTags);
     }
   };
-
   const handleDelete = (tagToDelete) => () => {
     removeTag(tagToDelete.id);
   };
-
+  const result = evaluateExpression(tags?.map((e) => e.value));
   const filterOptions = (options, state) => options;
-
   return (
     <Box sx={{ padding: "20px" }}>
       <Autocomplete
@@ -49,32 +55,31 @@ const FormulaInput = () => {
         multiple
         value={tags}
         onChange={handleSelect}
-        open={true}
         onInputChange={handleInputChange}
         options={suggestions || []}
         getOptionLabel={(option) => option.name}
         filterOptions={filterOptions}
         renderTags={(tagValue, getTagProps) => {
           return tagValue.map((option, index) => {
-            return (
-              <Chip
-                key={index}
-                label={option.name}
-                onDelete={handleDelete(option)}
-                {...getTagProps({ index })}
-              />
-            );
+            if (option?.type === typeTagMath) {
+              return <span key={option.id + index}>{option.name}</span>;
+            }
+            if (option.name) {
+              return (
+                <Chip
+                  key={option.id}
+                  label={option.name}
+                  onDelete={handleDelete(option)}
+                />
+              );
+            }
           });
         }}
         renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Input Formula"
-            variant="outlined"
-            fullWidth
-          />
+          <TextField {...params} variant="outlined" fullWidth />
         )}
       />
+      {result && <Typography pt={10}>result:{result}</Typography>}
     </Box>
   );
 };

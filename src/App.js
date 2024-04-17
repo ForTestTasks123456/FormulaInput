@@ -2,7 +2,7 @@ import "./App.css";
 import "./components/FormulaInput";
 import FormulaInput from "./components/FormulaInput";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "./api";
+import { queryClient } from "./api/api";
 
 function App() {
   return (

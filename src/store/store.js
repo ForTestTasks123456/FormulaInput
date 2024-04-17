@@ -7,8 +7,15 @@ export const useStore = create((set) => ({
     set((state) => ({
       tags: state.tags.map((tag, i) => (i === index ? newTag : tag)),
     })),
-  removeTag: (index) =>
-    set((state) => ({ tags: state.tags.filter((_, i) => i !== index) })),
+  removeTag: (id) =>
+    set((state) => ({
+      tags: state.tags.filter((tag) => tag.id !== id),
+    })),
+  inputValue: " ",
+  setInputValue: (value) =>
+    set((state) => ({
+      inputValue: value,
+    })),
 }));
 
 export default useStore;
