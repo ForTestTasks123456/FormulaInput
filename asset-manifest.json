@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/FormulaInput/static/css/main.f855e6bc.css",
+    "main.js": "/FormulaInput/static/js/main.1d5222f2.js",
+    "static/js/453.5339c249.chunk.js": "/FormulaInput/static/js/453.5339c249.chunk.js",
+    "index.html": "/FormulaInput/index.html",
+    "main.f855e6bc.css.map": "/FormulaInput/static/css/main.f855e6bc.css.map",
+    "main.1d5222f2.js.map": "/FormulaInput/static/js/main.1d5222f2.js.map",
+    "453.5339c249.chunk.js.map": "/FormulaInput/static/js/453.5339c249.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.f855e6bc.css",
+    "static/js/main.1d5222f2.js"
+  ]
+}
