@@ -1,52 +1,81 @@
 import React, { useState } from "react";
 import { useStore } from "../store";
 import { useAutocomplete } from "../api";
+import {
+  TextField,
+  List,
+  ListItem,
+  IconButton,
+  Stack,
+  Box,
+  Autocomplete,
+  Chip,
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const FormulaInput = () => {
-  const [input, setInput] = useState("");
+  const [inputValue, setInputValue] = useState("");
   const { tags, addTag, removeTag } = useStore();
-  const lastInput = input.split(" ").slice(-1)[0];
-  const { data: suggestions, isLoading } = useAutocomplete(lastInput);
+  const lastInput = inputValue
+    .split(" ")
+    .slice(-1)[0]
+    .trim()
+    .replace(/[^a-zA-Z0-9а-яА-ЯёЁ]/g, "");
+  const { data: suggestions } = useAutocomplete(lastInput);
 
-  const handleInput = (event) => {
-    setInput(event.target.value);
-  };
-
-  const handleKeyDown = (event) => {
-    if (event.key === "Enter" && lastInput) {
-      addTag(lastInput);
-      setInput("");
+  const handleInputChange = (event, newInputValue, reason) => {
+    if (reason === "input") {
+      // Убедитесь, что обновление состояния происходит только при вводе пользователя
+      setInputValue(newInputValue);
     }
   };
 
+  const handleSelect = (event, newValue) => {
+    if (newValue && !tags.find((tag) => tag.id === newValue.id)) {
+      addTag(newValue);
+    }
+  };
+
+  const handleDelete = (tagToDelete) => () => {
+    removeTag(tagToDelete.id);
+  };
+
+  const filterOptions = (options, state) => options;
+
   return (
-    <div>
-      {tags.map((tag, index) => (
-        <span key={index}>
-          {tag.name}
-          <button onClick={() => removeTag(index)}>x</button>
-        </span>
-      ))}
-      <input value={input} onChange={handleInput} onKeyDown={handleKeyDown} />
-      {isLoading ? (
-        <div>Loading...</div>
-      ) : (
-        <ul>
-          {suggestions?.map((suggestion) => (
-            <li
-              key={suggestion.id}
-              onClick={() => {
-                addTag(suggestion);
-                setInput("");
-              }}
-            >
-              {suggestion.name}
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    <Box sx={{ padding: "20px" }}>
+      <Autocomplete
+        freeSolo
+        multiple
+        value={tags}
+        onChange={handleSelect}
+        open={true}
+        onInputChange={handleInputChange}
+        options={suggestions || []}
+        getOptionLabel={(option) => option.name}
+        filterOptions={filterOptions}
+        renderTags={(tagValue, getTagProps) => {
+          return tagValue.map((option, index) => {
+            return (
+              <Chip
+                key={index}
+                label={option.name}
+                onDelete={handleDelete(option)}
+                {...getTagProps({ index })}
+              />
+            );
+          });
+        }}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label="Input Formula"
+            variant="outlined"
+            fullWidth
+          />
+        )}
+      />
+    </Box>
   );
 };
-
 export default FormulaInput;
